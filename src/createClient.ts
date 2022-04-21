@@ -3,6 +3,7 @@
  * https://github.com/microcmsio/microcms-js-sdk
  */
 import fetch from 'node-fetch';
+import https from 'https';
 import { parseQuery } from './utils/parseQuery';
 import { isString } from './utils/isCheckValue';
 import {
@@ -19,6 +20,10 @@ import {
 
 const BASE_DOMAIN = 'microcms.io';
 const API_VERSION = 'v1';
+
+const httpsAgent = new https.Agent({
+  keepAlive: true,
+});
 
 /**
  * Initialize SDK Client
@@ -47,8 +52,11 @@ export const createClient = ({ serviceDomain, apiKey }: MicroCMSClient) => {
   }: MakeRequest): Promise<T> => {
     const queryString = parseQuery(queries);
 
-    const baseHeaders = {
-      headers: { 'X-MICROCMS-API-KEY': apiKey },
+    const baseOptions = {
+      headers: {
+        'X-MICROCMS-API-KEY': apiKey,
+      },
+      agent: httpsAgent,
     };
 
 
@@ -57,7 +65,7 @@ export const createClient = ({ serviceDomain, apiKey }: MicroCMSClient) => {
     }`;
 
     try {
-      const response = await fetch(url, baseHeaders);
+      const response = await fetch(url, baseOptions);
 
       if (!response.ok) {
         throw new Error(`fetch API response status: ${response.status}`);
